@@ -63,3 +63,5 @@ typings/
 # Custom
 .idea
 dist
+
+artifacts/

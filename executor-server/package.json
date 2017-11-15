@@ -36,8 +36,12 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.4.0",
     "body-parser": "^1.17.1",
+    "chance": "^1.0.12",
     "express": "^4.15.2",
+    "express-fileupload": "^0.3.0",
+    "js-sha1": "^0.5.0",
     "morgan": "^1.7.0",
+    "mz": "^2.7.0",
     "pug": "^2.0.0-beta11",
     "rimraf": "^2.6.1"
   },
@@ -88,7 +92,10 @@
     ],
     "rules": {
       "jest/no-focused-tests": 2,
-      "jest/no-identical-title": 2
+      "jest/no-identical-title": 2,
+      "no-unused-vars": 0,
+      "semi": 2,
+      "no-empty": 0
     }
   },
   "jest": {

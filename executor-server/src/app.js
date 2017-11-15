@@ -28,6 +28,16 @@ app.use((req, res, next) => {
   next(err);
 });
 
+// Reply to errors on API endpoints with JSON
+app.use("/api/", (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  res
+    .status(err.status || 500)
+    .send({
+      error: err.status || 500,
+      message: err.message
+    });
+});
+
 // Error handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   res
@@ -36,5 +46,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
       message: err.message
     });
 });
+
+
 
 export default app;

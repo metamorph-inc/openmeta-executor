@@ -1,6 +1,13 @@
 import { Router } from 'express';
+import fs from 'mz/fs';
+import FileUpload from 'express-fileupload';
+import sha1 from 'js-sha1';
+
+import JobStore from "./JobStore";
 
 const routes = Router();
+
+const jobStore = new JobStore();
 
 /**
  * GET home page
@@ -31,6 +38,52 @@ routes.get('/list', (req, res, next) => {
   }
 
   res.render('index', { title });
+});
+
+routes.get('/api/debugJobStore', (req, res, next) => {
+  res.send(jobStore);
+});
+
+routes.use(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], FileUpload());
+routes.put(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], (req, res, next) => {
+  if(!req.files || !req.files.artifact) {
+
+    return;
+  }
+
+  const hash = sha1.create();
+  hash.update(req.files.artifact.data);
+  const hashHex = hash.hex();
+
+  //TODO: make the storage directory configurable or something
+  fs.mkdir("./artifacts").catch((err) => {
+    if(err.code === "EEXIST") {
+      return;
+    } else {
+      throw err;
+    }
+  }).then(() => {
+    return req.files.artifact.mv("./artifacts/" + hashHex).then(() => {
+      res.send({
+        hash: hashHex
+      });
+    });
+  }).catch((err) => {
+    next(new Error(`An error occurred when saving artifact: ${err.message}`));
+  });
+});
+
+routes.get(['/api/client/downloadArtifact/:fileHash', '/api/worker/downloadArtifact/:fileHash'], (req, res, next) => {
+  //TODO: is there a path injection vulnerability here?
+  const options = {
+    root: "./artifacts/",
+    dotfiles: "deny"
+  };
+  res.sendFile(req.params.fileHash, options, (err) => {
+    if(err) {
+      next(new Error(`An error occurred when fetching file: ${err.message}`));
+    }
+  });
 });
 
 export default routes;
