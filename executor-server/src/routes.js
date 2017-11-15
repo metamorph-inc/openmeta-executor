@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import Errors from 'throw.js';
 import fs from 'mz/fs';
 import FileUpload from 'express-fileupload';
 import sha1 from 'js-sha1';
 
+import Job from "./Job";
 import JobStore from "./JobStore";
 
 const routes = Router();
@@ -47,7 +49,7 @@ routes.get('/api/debugJobStore', (req, res, next) => {
 routes.use(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], FileUpload());
 routes.put(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], (req, res, next) => {
   if(!req.files || !req.files.artifact) {
-
+    next(new Errors.BadRequest("No artifact provided to upload"));
     return;
   }
 
@@ -81,9 +83,74 @@ routes.get(['/api/client/downloadArtifact/:fileHash', '/api/worker/downloadArtif
   };
   res.sendFile(req.params.fileHash, options, (err) => {
     if(err) {
-      next(new Error(`An error occurred when fetching file: ${err.message}`));
+      if(err.code === "ENOENT") {
+        next(new Errors.NotFound(`No artifact found with hash ${req.params.fileHash}`));
+      } else {
+        next(new Error(`An error occurred when fetching file: ${err.message}`));
+      }
     }
   });
+});
+
+routes.put('/api/client/createJob', (req, res, next) => {
+  if(req.headers["content-type"] !== "application/json") {
+    next(new Errors.BadRequest("Expected JSON job specification"));
+    return;
+  }
+  if(!req.body || !req.body.runCommand || !req.body.runZipId) {
+    next(new Errors.BadRequest("Missing required job parameter"));
+    return;
+  }
+
+  // TODO: verify that the specified run artifact exists
+  const newJob = new Job(req.body.runCommand, req.body.runZipId);
+  jobStore.queueJob(newJob);
+
+  res.json({
+    "id": newJob.uid
+  });
+});
+
+routes.get('/api/worker/getNextJob', (req, res, next) => {
+  const nextJob = jobStore.runNextJob();
+
+  if(!nextJob) {
+    // TODO: What should this return if there's no pending job?
+    next(new Errors.NotFound("No jobs in job queue"));
+    return;
+  }
+
+  res.json(nextJob);
+});
+
+routes.post('/api/worker/jobCompleted', (req, res, next) => {
+  if(req.headers["content-type"] !== "application/json") {
+    next(new Errors.BadRequest("Expected JSON job specification"));
+    return;
+  }
+  if(!req.body || !req.body.jobId || !req.body.completionState || !req.body.resultZipId) {
+    next(new Errors.BadRequest("Missing required parameter"));
+    return;
+  }
+
+  // TODO: verify that the specified artifact exists
+  jobStore.markJobCompleted(req.body.jobId, req.body.completionState, req.body.resultZipId);
+
+  res.json({
+    "result": "ok"
+  });
+});
+
+routes.get('/api/client/job/:jobId', (req, res, next) => {
+  const job = jobStore.getJobById(req.params.jobId);
+
+  if(!job) {
+    // TODO: What should this return if there's no pending job?
+    next(new Errors.NotFound(`No job found with ID ${req.params.jobId}`));
+    return;
+  }
+
+  res.json(job);
 });
 
 export default routes;

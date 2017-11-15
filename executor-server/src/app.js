@@ -31,9 +31,9 @@ app.use((req, res, next) => {
 // Reply to errors on API endpoints with JSON
 app.use("/api/", (err, req, res, next) => { // eslint-disable-line no-unused-vars
   res
-    .status(err.status || 500)
+    .status(err.statusCode || 500)
     .send({
-      error: err.status || 500,
+      error: err.statusCode || 500,
       message: err.message
     });
 });
@@ -41,7 +41,7 @@ app.use("/api/", (err, req, res, next) => { // eslint-disable-line no-unused-var
 // Error handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   res
-    .status(err.status || 500)
+    .status(err.statusCode || 500)
     .render('error', {
       message: err.message
     });
