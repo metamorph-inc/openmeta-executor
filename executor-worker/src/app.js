@@ -3,10 +3,12 @@ import fs from "mz/fs";
 import child_process from "mz/child_process";
 import path from "path";
 import unzip from "unzip";
+import archiver from "archiver";
 
 const JOB_POLL_DELAY = 2*1000;
+const ERROR_DELAY = 5*1000;
 
-console.log("Job server launched"); //eslint-disable-line no-console
+console.log("Executor worker launched");
 
 const JobState = {
   CREATED: 0,
@@ -48,18 +50,72 @@ const executeJob = async (job) => {
       cwd: path.join(".", "worker", job.uid)
     });
 
+    console.log("Job completed: success");
     return JobState.SUCCEEDED;
   } catch(err) {
+    console.log("Job completed: failed");
     return JobState.FAILED;
   }
 };
 
+const createZipFile = (jobId) => {
+  const promise = new Promise((resolve, reject) => {
+    // create a file to stream archive data to.
+    const zipFilePath = path.join(".", "worker", jobId + ".zip");
+    var output = fs.createWriteStream(zipFilePath);
+    var archive = archiver('zip', {
+      zlib: { level: 9 } // Sets the compression level.
+    });
+
+    // listen for all archive data to be written
+    // 'close' event is fired only when a file descriptor is involved
+    output.on('close', function() {
+      console.log(archive.pointer() + ' total bytes');
+      console.log('archiver has been finalized and the output file descriptor has closed.');
+
+      resolve(zipFilePath);
+    });
+
+    // good practice to catch warnings (ie stat failures and other non-blocking errors)
+    archive.on('warning', function(err) {
+      if (err.code === 'ENOENT') {
+        reject(err);
+      } else {
+        // throw error
+        reject(err);
+      }
+    });
+
+    // good practice to catch this error explicitly
+    archive.on('error', function(err) {
+      reject(err);
+    });
+
+    archive.pipe(output);
+
+    // append files from a sub-directory, putting its contents at the root of archive
+    archive.directory(path.join(".", "worker", jobId), false);
+
+    archive.finalize();
+  });
+
+  return promise;
+};
+
 const uploadJobResults = async (job, resultCode) => {
+  console.log("Compressing results");
+  const zipFilePath = await createZipFile(job.uid);
+
+  console.log("Uploading results");
+  const uploadRes = await request.put("http://localhost:8080/api/worker/uploadArtifact")
+    .attach("artifact", zipFilePath);
+
+  console.log("Informing job server that job is complete");
   const res = await request.post("http://localhost:8080/api/worker/jobCompleted")
     .send({
       jobId: job.uid,
       completionState: resultCode,
-      resultZipId: "test"
+      resultZipId: uploadRes.body.hash
     });
 };
 
@@ -78,11 +134,12 @@ const jobPoll = async () => {
     await uploadJobResults(newJob, jobResult);
     setTimeout(jobPoll, JOB_POLL_DELAY);
   } catch(err) {
-    if(err.status === 404) {
+    if(err.status && err.status === 404) {
       console.log("No pending jobs; continuing");
       setTimeout(jobPoll, JOB_POLL_DELAY);
     } else {
       console.error(err);
+      setTimeout(jobPoll, ERROR_DELAY);
     }
   }
 };
