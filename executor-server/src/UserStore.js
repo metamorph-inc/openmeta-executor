@@ -1,10 +1,12 @@
 import fs from "mz/fs";
 import bcrypt from "bcrypt";
 
+const SALT_ROUNDS = 10;
+
 class UserStore {
   constructor() {
-    this.users = new Map();
-    this.readAuthConfig();
+    this.setDefaultConfig();
+    this.readAuthConfigSync();
   }
 
   verifyUser(username, password) {
@@ -17,21 +19,38 @@ class UserStore {
     }
   }
 
-  readAuthConfig() {
-    const rs = fs.createReadStream('auth.json');
-    let passwords_data = '';
-    rs.on('data', (chunk) => {
-      passwords_data = passwords_data + chunk;
+  setDefaultConfig() {
+    this.users = new Map();
+  }
+
+  // TODO: If we start reloading the config at runtime, we should have an
+  //       async version of this method (we need the sync version for the
+  //       constructor, though).
+  readAuthConfigSync() {
+    try {
+      const passwords_data = fs.readFileSync('auth.json');
+      const parsedConfig = JSON.parse(passwords_data);
+      this.users = new Map(parsedConfig.users);
+    } catch(err) {
+      this.setDefaultConfg();
+    }
+  }
+
+  writeAuthConfigSync() {
+    const config = {
+      users: [...this.users]
+    };
+
+    fs.writeFileSync('auth.json', JSON.stringify(config));
+  }
+
+  addUser(username, password) {
+    const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
+    this.users.set(username, {
+      passwordHash: hashedPassword
     });
-    rs.on('end', () => { // Note: arrow functions don't rebind 'this'
-      try {
-        const parsedConfig = JSON.parse(passwords_data);
-        this.users = new Map(parsedConfig.users);
-      } catch(err) {
-        // Fall back to default config if config file isn't parsable
-        this.users = new Map();
-      }
-    });
+
+    this.writeAuthConfigSync();
   }
 }
 
