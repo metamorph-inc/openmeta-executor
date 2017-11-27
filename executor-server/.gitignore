@@ -64,4 +64,8 @@ typings/
 .idea
 dist
 
+# Config files containing sensitive data
+auth.json
+
+# Runtime artifacts
 artifacts/

@@ -6,10 +6,17 @@ import sha1 from 'js-sha1';
 
 import Job from "./Job";
 import JobStore from "./JobStore";
+import UserStore from "./UserStore";
+import Authentication from "./Authentication";
 
 const routes = Router();
 
 const jobStore = new JobStore();
+const userStore = new UserStore();
+const authentication = new Authentication(userStore);
+
+routes.use('/api/client', authentication.clientApiAuth);
+routes.use('/api/client', authentication.clientApiRejectUnauthenticated);
 
 /**
  * GET home page
