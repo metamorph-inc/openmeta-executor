@@ -6,5 +6,6 @@
         "passwordHash": "$2a$10$B7V3PywixaB8xaWBtRiZDewiyfih4.7lUjvugXk5Nn1KbcVve4ax2"
       }
     ]
-  ]
+  ],
+  "workerKey": "Change Me"
 }
