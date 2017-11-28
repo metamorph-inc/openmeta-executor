@@ -26,7 +26,7 @@ const argv = yargs
         const userStore = new UserStore();
         userStore.addUser(argv.username, result.password);
 
-        console.log("Successfully added user", argv.username);
+        console.log("Successfully added user", argv.username); //eslint-disable-line no-console
       }
     });
   })

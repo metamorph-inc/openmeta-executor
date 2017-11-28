@@ -18,6 +18,8 @@ const authentication = new Authentication(userStore);
 routes.use('/api/client', authentication.clientApiAuth);
 routes.use('/api/client', authentication.clientApiRejectUnauthenticated);
 
+routes.use('/api/worker', authentication.workerApiRejectInvalidKey);
+
 /**
  * GET home page
  */

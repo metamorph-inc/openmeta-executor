@@ -1,5 +1,6 @@
 import fs from "mz/fs";
 import bcrypt from "bcrypt";
+import Chance from "chance";
 
 const SALT_ROUNDS = 10;
 
@@ -21,6 +22,7 @@ class UserStore {
 
   setDefaultConfig() {
     this.users = new Map();
+    this.workerKey = (new Chance()).string({length: 30});
   }
 
   // TODO: If we start reloading the config at runtime, we should have an
@@ -31,17 +33,19 @@ class UserStore {
       const passwords_data = fs.readFileSync('auth.json');
       const parsedConfig = JSON.parse(passwords_data);
       this.users = new Map(parsedConfig.users);
+      this.workerKey = parsedConfig.workerKey;
     } catch(err) {
-      this.setDefaultConfg();
+      this.setDefaultConfig();
     }
   }
 
   writeAuthConfigSync() {
     const config = {
-      users: [...this.users]
+      users: [...this.users],
+      workerKey: this.workerKey
     };
 
-    fs.writeFileSync('auth.json', JSON.stringify(config));
+    fs.writeFileSync('auth.json', JSON.stringify(config, null, 2));
   }
 
   addUser(username, password) {

@@ -14,6 +14,14 @@ class Authentication {
         callback(null, false, { error: "INVALID_PASSWORD" });
       }
     });
+
+    this.workerApiRejectInvalidKey = (req, res, next) => {
+      if(req.headers['openmeta-worker-key'] && req.headers['openmeta-worker-key'] === this.userStore.workerKey) {
+        next();
+      } else {
+        next(new Errors.Forbidden("Worker key missing or invalid."));
+      }
+    };
   }
 
   clientApiRejectUnauthenticated(req, res, next) {
