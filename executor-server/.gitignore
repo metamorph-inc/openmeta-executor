@@ -69,3 +69,4 @@ auth.json
 
 # Runtime artifacts
 artifacts/
+jobs.nedb

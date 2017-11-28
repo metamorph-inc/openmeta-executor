@@ -18,6 +18,36 @@ class Job {
     this.uid = (new Chance()).guid();
     this.resultZipId = null;
   }
+
+  /**
+   * Takes an object (as stored in the data store) and
+   * converts it to a Job instance
+   */
+  static fromSerializedObject(obj) {
+    const newJob = new Job();
+
+    newJob.runCommand = obj.runCommand;
+    newJob.runZipId = obj.runZipId;
+    newJob.owner = obj.owner;
+    newJob.creationTime = obj.creationTime;
+    newJob.status = obj.status;
+    newJob.uid = obj.uid;
+    newJob.resultZipId = obj.resultZipId;
+
+    return newJob;
+  }
+
+  /**
+   * Takes a Job instance and converts it to be stored in
+   * the data store.
+   */
+  toSerializedObject() {
+    const newObj = {...this};
+
+    newObj._id = this.uid;
+
+    return newObj;
+  }
 }
 
 export { JobState };

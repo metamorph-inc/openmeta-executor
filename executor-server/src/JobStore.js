@@ -1,7 +1,11 @@
+import Datastore from "nedb";
+
 import Job, { JobState } from "./Job";
 
 class JobStore {
   constructor() {
+    this.db = new Datastore({ filename: 'jobs.nedb', autoload: true });
+
     this.pendingJobQueue = [];
     this.allJobs = new Map();
     this.allJobs.toJSON = () => { // For debugging, because JSON.stringify doesn't work on Maps by default
@@ -10,31 +14,88 @@ class JobStore {
   }
 
   queueJob(newJob) {
-    this.allJobs.set(newJob.uid, newJob);
-    this.pendingJobQueue.push(newJob);
+    const promise = new Promise((resolve, reject) => {
+      this.db.insert(newJob.toSerializedObject(), (err, newDoc) => {
+        if(err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    return promise;
   }
 
   runNextJob() {
-    const nextJob = this.pendingJobQueue.shift();
+    //HACK: 'this' gets rebound in 'exec' callback--  shouldn't even be
+    //      possible with arrow functions?
+    const self = this;
 
-    if(nextJob) {
-      nextJob.status = JobState.RUNNING;
-    }
+    const promise = new Promise((resolve, reject) => {
+      this.db.find({ status: JobState.CREATED })
+        .sort({creationTime: 1})
+        .exec(function(err, docs) {
+          if(err) {
+            reject(err);
+          } else {
+            if(docs.length === 0) {
+              resolve(null);
+            } else {
+              const nextJob = docs[0];
+              nextJob.status = JobState.RUNNING;
 
-    return nextJob;
+              self.db.update({ _id: nextJob._id }, nextJob, (err) => {
+                if(err) {
+                  reject(err);
+                } else {
+                  resolve(Job.fromSerializedObject(nextJob));
+                }
+              });
+            }
+          }
+        });
+    });
+
+    return promise;
   }
 
   markJobCompleted(jobId, completionState, resultZipId) {
-    const completedJob = this.allJobs.get(jobId);
+    const promise = new Promise((resolve, reject) => {
+      this.db.update({ _id: jobId },
+        { $set: { status: completionState, resultZipId: resultZipId}},
+        (err) => {
+          if(err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    });
 
-    if(completedJob) {
-      completedJob.status = completionState;
-      completedJob.resultZipId = resultZipId;
-    }
+    return promise;
   }
 
   getJobById(jobId) {
-    return this.allJobs.get(jobId);
+    const promise = new Promise((resolve, reject) => {
+      this.db.find({ _id: jobId }, (err, docs) => {
+        if(err) {
+          reject(err);
+        } else {
+          if(docs.length === 0) {
+            resolve(null);
+          } else if(docs.length === 1) {
+            resolve(Job.fromSerializedObject(docs[0]));
+          } else {
+            // This shouldn't be possible (query by key should never return more
+            // than one object), but handle it just in case
+            reject(new Error("Too many jobs returned from query"));
+          }
+        }
+      });
+    });
+
+    return promise;
   }
 }
 

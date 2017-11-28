@@ -4,6 +4,7 @@ import fs from 'mz/fs';
 import FileUpload from 'express-fileupload';
 import sha1 from 'js-sha1';
 
+import asyncMiddleware from "./utils/AsyncMiddleware.js";
 import Job from "./Job";
 import JobStore from "./JobStore";
 import UserStore from "./UserStore";
@@ -101,7 +102,7 @@ routes.get(['/api/client/downloadArtifact/:fileHash', '/api/worker/downloadArtif
   });
 });
 
-routes.put('/api/client/createJob', (req, res, next) => {
+routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
   if(req.headers["content-type"] !== "application/json") {
     next(new Errors.BadRequest("Expected JSON job specification"));
     return;
@@ -113,15 +114,15 @@ routes.put('/api/client/createJob', (req, res, next) => {
 
   // TODO: verify that the specified run artifact exists
   const newJob = new Job(req.body.runCommand, req.body.runZipId, req.authentication.user);
-  jobStore.queueJob(newJob);
+  await jobStore.queueJob(newJob);
 
   res.json({
     "id": newJob.uid
   });
-});
+}));
 
-routes.get('/api/worker/getNextJob', (req, res, next) => {
-  const nextJob = jobStore.runNextJob();
+routes.get('/api/worker/getNextJob', asyncMiddleware(async (req, res, next) => {
+  const nextJob = await jobStore.runNextJob();
 
   if(!nextJob) {
     // TODO: What should this return if there's no pending job?
@@ -130,9 +131,9 @@ routes.get('/api/worker/getNextJob', (req, res, next) => {
   }
 
   res.json(nextJob);
-});
+}));
 
-routes.post('/api/worker/jobCompleted', (req, res, next) => {
+routes.post('/api/worker/jobCompleted', asyncMiddleware(async (req, res, next) => {
   if(req.headers["content-type"] !== "application/json") {
     next(new Errors.BadRequest("Expected JSON job specification"));
     return;
@@ -143,15 +144,15 @@ routes.post('/api/worker/jobCompleted', (req, res, next) => {
   }
 
   // TODO: verify that the specified artifact exists
-  jobStore.markJobCompleted(req.body.jobId, req.body.completionState, req.body.resultZipId);
+  await jobStore.markJobCompleted(req.body.jobId, req.body.completionState, req.body.resultZipId);
 
   res.json({
     "result": "ok"
   });
-});
+}));
 
-routes.get('/api/client/job/:jobId', (req, res, next) => {
-  const job = jobStore.getJobById(req.params.jobId);
+routes.get('/api/client/job/:jobId', asyncMiddleware(async (req, res, next) => {
+  const job = await jobStore.getJobById(req.params.jobId);
 
   if(!job) {
     // TODO: What should this return if there's no pending job?
@@ -160,6 +161,6 @@ routes.get('/api/client/job/:jobId', (req, res, next) => {
   }
 
   res.json(job);
-});
+}));
 
 export default routes;
