@@ -9,9 +9,10 @@ const JobState = {
 };
 
 class Job {
-  constructor(runCommand, runZipId) {
+  constructor(runCommand, runZipId, owner) {
     this.runCommand = runCommand;
     this.runZipId = runZipId;
+    this.owner = owner;
     this.creationTime = new Date();
     this.status = JobState.CREATED;
     this.uid = (new Chance()).guid();

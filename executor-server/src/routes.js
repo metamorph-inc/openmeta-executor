@@ -51,7 +51,7 @@ routes.get('/list', (req, res, next) => {
   res.render('index', { title });
 });
 
-routes.get('/api/debugJobStore', (req, res, next) => {
+routes.get('/api/client/debugJobStore', (req, res, next) => {
   res.send(jobStore);
 });
 
@@ -112,7 +112,7 @@ routes.put('/api/client/createJob', (req, res, next) => {
   }
 
   // TODO: verify that the specified run artifact exists
-  const newJob = new Job(req.body.runCommand, req.body.runZipId);
+  const newJob = new Job(req.body.runCommand, req.body.runZipId, req.authentication.user);
   jobStore.queueJob(newJob);
 
   res.json({
