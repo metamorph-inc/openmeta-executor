@@ -22,7 +22,7 @@ class UserStore {
 
   setDefaultConfig() {
     this.users = new Map();
-    this.workerKey = (new Chance()).string({length: 30});
+    this.workerKey = (new Chance()).string({length: 30, pool: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'});
   }
 
   // TODO: If we start reloading the config at runtime, we should have an
