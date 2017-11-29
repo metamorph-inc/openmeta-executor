@@ -29,33 +29,21 @@ routes.get('/', (req, res) => {
 });
 
 /**
- * GET /list
- *
- * This is a sample route demonstrating
- * a simple approach to error handling and testing
- * the global error handler. You most certainly want to
- * create different/better error handlers depending on
- * your use case.
+ * Authenticated ping endpoint--  allows clients and workers to verify that
+ * executor server is alive and their credentials are valid
  */
-routes.get('/list', (req, res, next) => {
-  const { title } = req.query;
-
-  if (title == null || title === '') {
-    // You probably want to set the response HTTP status to 400 Bad Request
-    // or 422 Unprocessable Entity instead of the default 500 of
-    // the global error handler (e.g check out https://github.com/kbariotis/throw.js).
-    // This is just for demo purposes.
-    next(new Error('The "title" parameter is required'));
-    return;
-  }
-
-  res.render('index', { title });
+routes.get(['/api/client/ping', '/api/worker/ping'], (req, res, next) => {
+  res.send({"result": "ok"});
 });
 
-routes.get('/api/client/debugJobStore', (req, res, next) => {
+/*routes.get('/api/client/debugJobStore', (req, res, next) => {
   res.send(jobStore);
-});
+});*/
 
+/**
+ * Artifact upload--  used by client to upload workspace and by worker to upload
+ * completed results
+ */
 routes.use(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], FileUpload());
 routes.put(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], (req, res, next) => {
   if(!req.files || !req.files.artifact) {
@@ -85,6 +73,10 @@ routes.put(['/api/client/uploadArtifact', '/api/worker/uploadArtifact'], (req, r
   });
 });
 
+/**
+ * Artifact download - used by client to download completed results and by
+ * worker to download workspace to operate on
+ */
 routes.get(['/api/client/downloadArtifact/:fileHash', '/api/worker/downloadArtifact/:fileHash'], (req, res, next) => {
   //TODO: is there a path injection vulnerability here?
   const options = {
@@ -102,6 +94,11 @@ routes.get(['/api/client/downloadArtifact/:fileHash', '/api/worker/downloadArtif
   });
 });
 
+/**
+ * Used by the client to create a new job--  content should be a JSON object,
+ * containing the command to run and an artifact ID pointing to the workspace
+ * ZIP file.  Returns the job ID.
+ */
 routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
   if(req.headers["content-type"] !== "application/json") {
     next(new Errors.BadRequest("Expected JSON job specification"));
@@ -121,6 +118,10 @@ routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
   });
 }));
 
+/**
+ * Used by the worker to get the next job to run--  returns a job object as
+ * JSON.
+ */
 routes.get('/api/worker/getNextJob', asyncMiddleware(async (req, res, next) => {
   const nextJob = await jobStore.runNextJob();
 
@@ -133,6 +134,11 @@ routes.get('/api/worker/getNextJob', asyncMiddleware(async (req, res, next) => {
   res.json(nextJob);
 }));
 
+/**
+ * Used by the worker to mark a job as completed--  content should be a JSON
+ * object, containing the job ID, the completion state (either COMPLETED or
+ * FAILED), and the artifact ID of the results ZIP.
+ */
 routes.post('/api/worker/jobCompleted', asyncMiddleware(async (req, res, next) => {
   if(req.headers["content-type"] !== "application/json") {
     next(new Errors.BadRequest("Expected JSON job specification"));
@@ -151,6 +157,10 @@ routes.post('/api/worker/jobCompleted', asyncMiddleware(async (req, res, next) =
   });
 }));
 
+/**
+ * Used by the client to get information about the job with ID `jobId`.  returns
+ * a job object as JSON.
+ */
 routes.get('/api/client/job/:jobId', asyncMiddleware(async (req, res, next) => {
   const job = await jobStore.getJobById(req.params.jobId);
 
