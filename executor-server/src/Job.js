@@ -21,7 +21,10 @@ class Job {
 
   /**
    * Takes an object (as stored in the data store) and
-   * converts it to a Job instance
+   * converts it to a Job instance.
+   *
+   * @param {object} obj - The object to convert
+   * @return {Job} The new job
    */
   static fromSerializedObject(obj) {
     const newJob = new Job();
