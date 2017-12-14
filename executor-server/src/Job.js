@@ -9,8 +9,9 @@ const JobState = {
 };
 
 class Job {
-  constructor(runCommand, runZipId, owner) {
+  constructor(runCommand, workingDirectory, runZipId, owner) {
     this.runCommand = runCommand;
+    this.workingDirectory = workingDirectory;
     this.runZipId = runZipId;
     this.owner = owner;
     this.creationTime = new Date();
@@ -30,6 +31,7 @@ class Job {
     const newJob = new Job();
 
     newJob.runCommand = obj.runCommand;
+    newJob.workingDirectory = obj.workingDirectory;
     newJob.runZipId = obj.runZipId;
     newJob.owner = obj.owner;
     newJob.creationTime = obj.creationTime;

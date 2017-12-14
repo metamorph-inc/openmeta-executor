@@ -104,13 +104,14 @@ routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
     next(new Errors.BadRequest("Expected JSON job specification"));
     return;
   }
-  if(!req.body || !req.body.runCommand || !req.body.runZipId) {
-    next(new Errors.BadRequest("Missing required job parameter"));
+  if(!req.body || !req.body.runCommand || !req.body.workingDirectory || !req.body.runZipId) {
+    console.log(req.body);
+    next(new Errors.BadRequest("Missing required job parameter "));
     return;
   }
 
   // TODO: verify that the specified run artifact exists
-  const newJob = new Job(req.body.runCommand, req.body.runZipId, req.authentication.user);
+  const newJob = new Job(req.body.runCommand, req.body.workingDirectory, req.body.runZipId, req.authentication.user);
   await jobStore.queueJob(newJob);
 
   res.json({

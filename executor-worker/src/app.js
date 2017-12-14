@@ -49,7 +49,7 @@ const app = (serverAddress, serverKey) => {
     console.log("Launching subprocess");
     try {
       const result = await child_process.exec(runCommand, {
-        cwd: path.join(".", "worker", job.uid)
+        cwd: path.join(".", "worker", job.uid, job.workingDirectory)
       });
 
       console.log("Job completed: success");
