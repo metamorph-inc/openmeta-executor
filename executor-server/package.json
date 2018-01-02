@@ -6,6 +6,7 @@
   "author": "Jonathon Williams (jwilliams@metamorphsoftware.com)",
   "license": "MIT",
   "main": "dist/index.js",
+  "bin": "dist/index.js",
   "engines": {
     "node": "~6.9.1",
     "npm": ">=3.10.0"
@@ -17,7 +18,8 @@
     "clean": "rimraf dist",
     "build": "npm run clean && mkdir dist && babel src -s -D -d dist",
     "test": "jest --watch",
-    "lint": "esw -w src test"
+    "lint": "esw -w src test",
+    "package": "npm run build && pkg . --out-dir ./package && shx cp node_modules/bcrypt/lib/binding/bcrypt_lib.node ./package/"
   },
   "keywords": [
     "express",
@@ -63,6 +65,8 @@
     "eslint-watch": "^3.1.0",
     "jest": "^21.0.2",
     "nodemon": "^1.11.0",
+    "pkg": "^4.3.0-beta.5",
+    "shx": "^0.2.2",
     "supertest": "^3.0.0"
   },
   "babel": {
@@ -112,5 +116,17 @@
   },
   "jest": {
     "testEnvironment": "node"
+  },
+  "pkg": {
+    "scripts": [
+      "dist/**/*.js",
+      "node_modules/throw.js/lib/errors/*.js"
+    ],
+    "assets": [
+      "views/**/*"
+    ],
+    "targets": [
+      "host"
+    ]
   }
 }
