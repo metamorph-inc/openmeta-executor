@@ -2,7 +2,7 @@ python download_node.py
 
 PATH=%CD%\node-v8.9.3-win-x64\;%PATH%
 
-npm install -g yarn@1.3.2
+call npm install -g yarn@1.3.2
 
 pushd ..\executor-server
 call yarn && call yarn run package
