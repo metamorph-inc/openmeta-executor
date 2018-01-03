@@ -7,6 +7,9 @@ pipeline {
                     label 'meta-build'
                 }
             }
+            triggers {
+                pollSCM('H/5 * * * *')
+            }
             steps {
                 checkout scm
                 dir('jenkins') {
