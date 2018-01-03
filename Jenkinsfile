@@ -1,14 +1,14 @@
 pipeline {
     agent none
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
     stages {
         stage('Build') {
             agent {
                 node {
                     label 'meta-build'
                 }
-            }
-            triggers {
-                pollSCM('H/5 * * * *')
             }
             steps {
                 checkout scm
