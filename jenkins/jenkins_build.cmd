@@ -1,4 +1,4 @@
-python download_node.py
+C:\Python27\python.exe download_node.py
 
 PATH=%CD%\node-v8.9.3-win-x64\;%PATH%
 
@@ -16,4 +16,4 @@ mkdir remote-executor
 copy ..\executor-server\package\* remote-executor\
 copy ..\executor-worker\package\* remote-executor\
 
-python -m zipfile -c remote-executor.zip remote-executor\
+C:\Python27\python.exe -m zipfile -c remote-executor.zip remote-executor\
