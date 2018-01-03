@@ -18,7 +18,6 @@ pipeline {
 
                 archiveArtifacts artifacts: 'jenkins/remote-executor.zip', onlyIfSuccessful: true
             }
-
         }
     }
 }
