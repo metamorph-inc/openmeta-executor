@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import zipfile
 import subprocess
-import requests
+from urllib2 import urlopen, URLError, HTTPError
 
 url = 'https://nodejs.org/dist/v8.9.3/node-v8.9.3-win-x64.zip'
 filename = 'node-v8.9.3-win-x64.zip'
@@ -15,21 +15,23 @@ def download(url, filename):
     if os.path.isfile(filename):
         return
     print('Downloading ' + url)
-    r = requests.get(url, stream=True)
-    r.raise_for_status()
-    fd, tmp_path = tempfile.mkstemp()
-    with os.fdopen(fd, 'wb') as f:
-        for chunk in r.iter_content(chunk_size=1024):
-            if chunk:  # filter out keep-alive new chunks
-                f.write(chunk)
-        # n.b. don't use f.tell(), since it will be wrong for Content-Encoding: gzip
-        downloaded_octets = r.raw._fp_bytes_read
-    if int(r.headers.get('content-length', downloaded_octets)) != downloaded_octets:
-        os.unlink(tmp_path)
-        raise ValueError('Download of {} was truncated: {}/{} bytes'.format(url, downloaded_octets, r.headers['content-length']))
-    else:
+
+    try:
+        f = urlopen(url)
+        print "downloading " + url
+
+        fd, tmp_path = tempfile.mkstemp()
+        with os.fdopen(fd, 'wb') as local_file:
+            local_file.write(f.read())
+
         os.rename(tmp_path, filename)
         print('  => {}'.format(filename))
+    #handle errors
+    except HTTPError, e:
+        print "HTTP Error:", e.code, url
+    except URLError, e:
+        print "URL Error:", e.reason, url
+
 
 
 def decompress(filename, dirname):
