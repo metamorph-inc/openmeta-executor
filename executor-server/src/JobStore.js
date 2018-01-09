@@ -76,6 +76,23 @@ class JobStore {
     return promise;
   }
 
+  async cancelJob(jobId) {
+    const job = await this.getJobById(jobId);
+
+    if(job !== null) {
+      let cancelled = false;
+
+      if(job.status === JobState.CREATED) {
+        await this.markJobCompleted(jobId, JobState.CANCELLED, null);
+        cancelled = true;
+      }
+      // TODO: handle cancellation of jobs in progress (RUNNING state)
+      return cancelled;
+    } else {
+      return false;
+    }
+  }
+
   getJobById(jobId) {
     const promise = new Promise((resolve, reject) => {
       this.db.find({ _id: jobId }, (err, docs) => {

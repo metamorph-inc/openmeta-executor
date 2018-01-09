@@ -105,7 +105,6 @@ routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
     return;
   }
   if(!req.body || !req.body.runCommand || !req.body.workingDirectory || !req.body.runZipId) {
-    console.log(req.body);
     next(new Errors.BadRequest("Missing required job parameter "));
     return;
   }
@@ -159,7 +158,7 @@ routes.post('/api/worker/jobCompleted', asyncMiddleware(async (req, res, next) =
 }));
 
 /**
- * Used by the client to get information about the job with ID `jobId`.  returns
+ * Used by the client to get information about the job with ID `jobId`.  Returns
  * a job object as JSON.
  */
 routes.get('/api/client/job/:jobId', asyncMiddleware(async (req, res, next) => {
@@ -173,5 +172,17 @@ routes.get('/api/client/job/:jobId', asyncMiddleware(async (req, res, next) => {
 
   res.json(job);
 }));
+
+/**
+ * Used by the client to cancel the job with ID `jobId`.  Returns a JSON object
+ * indicating if the job was successfully cancelled or not.
+ */
+ routes.post('/api/client/job/:jobId/cancel', asyncMiddleware(async (req, res, next) => {
+   const cancelled = await jobStore.cancelJob(req.params.jobId);
+
+   res.json({
+     "cancelled": cancelled
+   });
+ }));
 
 export default routes;
