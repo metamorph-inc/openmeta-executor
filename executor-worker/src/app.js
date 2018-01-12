@@ -8,7 +8,7 @@ import archiver from "archiver";
 const JOB_POLL_DELAY = 2*1000;
 const ERROR_DELAY = 5*1000;
 
-const app = (serverAddress, serverKey) => {
+const app = (serverAddress, serverKey, labels) => {
   console.log("Executor worker launched");
 
   const JobState = {
@@ -128,7 +128,8 @@ const app = (serverAddress, serverKey) => {
 
     try {
       const res = await request.get(serverAddress + 'api/worker/getNextJob')
-        .set("openmeta-worker-key", serverKey);
+        .set("openmeta-worker-key", serverKey)
+        .query({workerLabels: labels});
       const newJob = res.body;
       console.log("New job received");
       console.log(res.body);

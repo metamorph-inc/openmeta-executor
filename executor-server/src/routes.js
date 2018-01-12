@@ -109,8 +109,15 @@ routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
     return;
   }
 
+  let labelsString = req.body.labels;
+  if(!req.body.labels) {
+    // Default to empty string if labels not present
+    labelsString = "";
+  }
+  const tokenizedLabels = labelsString.split("&&").map(str => str.trim()).filter(str => str.length !== 0);
+
   // TODO: verify that the specified run artifact exists
-  const newJob = new Job(req.body.runCommand, req.body.workingDirectory, req.body.runZipId, req.authentication.user);
+  const newJob = new Job(req.body.runCommand, req.body.workingDirectory, req.body.runZipId, req.authentication.user, tokenizedLabels);
   await jobStore.queueJob(newJob);
 
   res.json({
@@ -123,7 +130,13 @@ routes.put('/api/client/createJob', asyncMiddleware(async (req, res, next) => {
  * JSON.
  */
 routes.get('/api/worker/getNextJob', asyncMiddleware(async (req, res, next) => {
-  const nextJob = await jobStore.runNextJob();
+  let workerLabelsString = req.query.workerLabels;
+  if(!req.query.workerLabels) {
+    workerLabelsString = "";
+  }
+  const tokenizedLabels = workerLabelsString.split(",").map(str => str.trim()).filter(str => str.length !== 0);
+
+  const nextJob = await jobStore.runNextJob(tokenizedLabels);
 
   if(!nextJob) {
     // TODO: What should this return if there's no pending job?

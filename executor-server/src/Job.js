@@ -9,7 +9,7 @@ const JobState = {
 };
 
 class Job {
-  constructor(runCommand, workingDirectory, runZipId, owner) {
+  constructor(runCommand, workingDirectory, runZipId, owner, labels) {
     this.runCommand = runCommand;
     this.workingDirectory = workingDirectory;
     this.runZipId = runZipId;
@@ -18,6 +18,7 @@ class Job {
     this.status = JobState.CREATED;
     this.uid = (new Chance()).guid();
     this.resultZipId = null;
+    this.labels = labels;
   }
 
   /**
@@ -38,6 +39,12 @@ class Job {
     newJob.status = obj.status;
     newJob.uid = obj.uid;
     newJob.resultZipId = obj.resultZipId;
+
+    if(obj.hasOwnProperty("labels")) {
+      newJob.labels = obj.labels;
+    } else {
+      newJob.labels = [];
+    }
 
     return newJob;
   }

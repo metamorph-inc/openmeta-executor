@@ -27,13 +27,37 @@ class JobStore {
     return promise;
   }
 
-  runNextJob() {
+  runNextJob(workerLabels) {
     //HACK: 'this' gets rebound in 'exec' callback--  shouldn't even be
     //      possible with arrow functions?
     const self = this;
 
     const promise = new Promise((resolve, reject) => {
-      this.db.find({ status: JobState.CREATED })
+      this.db.find(
+          {
+            $and: [
+              {
+                status: JobState.CREATED
+              },
+              {
+                $or: [
+                  {
+                    $not: {
+                      labels: {
+                        "$nin": workerLabels
+                      }
+                    }
+                  },
+                  {
+                    labels: {
+                      $exists: false
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        )
         .sort({creationTime: 1})
         .exec(function(err, docs) {
           if(err) {
