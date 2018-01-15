@@ -3,7 +3,8 @@ import Datastore from "nedb";
 import Job, { JobState } from "./Job";
 
 class JobStore {
-  constructor() {
+  constructor(ignoreJobLabels) {
+    this.ignoreJobLabels = ignoreJobLabels;
     this.db = new Datastore({ filename: 'jobs.nedb', autoload: true });
 
     this.pendingJobQueue = [];
@@ -33,31 +34,37 @@ class JobStore {
     const self = this;
 
     const promise = new Promise((resolve, reject) => {
-      this.db.find(
-          {
-            $and: [
-              {
-                status: JobState.CREATED
-              },
-              {
-                $or: [
-                  {
-                    $not: {
-                      labels: {
-                        "$nin": workerLabels
-                      }
-                    }
-                  },
-                  {
+      let query = {};
+
+      if(this.ignoreJobLabels) {
+        query = { status: JobState.CREATED };
+      } else {
+        query = {
+          $and: [
+            {
+              status: JobState.CREATED
+            },
+            {
+              $or: [
+                {
+                  $not: {
                     labels: {
-                      $exists: false
+                      "$nin": workerLabels
                     }
                   }
-                ]
-              }
-            ]
-          }
-        )
+                },
+                {
+                  labels: {
+                    $exists: false
+                  }
+                }
+              ]
+            }
+          ]
+        };
+      }
+
+      this.db.find(query)
         .sort({creationTime: 1})
         .exec(function(err, docs) {
           if(err) {

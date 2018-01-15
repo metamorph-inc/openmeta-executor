@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import prompt from 'prompt';
 
-import app from './app';
+import App from './app';
 import UserStore from './UserStore';
 
 const argv = yargs
@@ -17,10 +17,17 @@ const argv = yargs
       default: 8080,
       number: true,
       description: "Port to listen on"
+    },
+    'ignore-job-labels': {
+      default: false,
+      bool: true,
+      description: "Ignore job labels when dispatching jobs (assume all workers can handle all jobs)"
     }
   }, (argv) => {
     const address = argv.listenAddress;
     const port = argv.listenPort;
+
+    const app = App(argv.ignoreJobLabels);
 
     app.listen(port, address, () => console.log(`Listening on port ${port}`)); // eslint-disable-line no-console
   })

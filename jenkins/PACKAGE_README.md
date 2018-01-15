@@ -40,3 +40,22 @@ Running the Remote Execution Server and Worker
     usual.  Note that not all interpreters are compatible with remote execution
     (the Simulink interpreter works well; try the SimulinkTestModel in Tonka's
     `models` directory).
+
+Remote Executor Worker Labels
+-----------------------------
+
+  * **Default**: "Windows14.13"
+  * CyPhy2CAD: "Creo&&CADCreoParametricCreateAssembly.exev1.4&&" + JobManager.Job.DefaultLabels;
+  * CyPhy2Modelica: "OpenModelica && py_modelica12.08"
+      * or: modelicaCodeGenerator.SolverSettings.ToolSelection + " && py_modelica" + JobManager.Job.LabelVersion
+  * CyPhyCADAnalysis: "Creo&&CADCreoParametricCreateAssembly.exev1.4" + " && CyPhyCADAnalysis" + JobManager.Job.LabelVersion;
+  * CyPhyPET: Takes label(s) from interpreters used in its testbench(es)
+  * CyPhyPrepareIFab: "Creo&&CADCreoParametricCreateAssembly.exev1.4&&" + JobManager.Job.DefaultLabels
+  * CyPhyReliabilityAnalysis: None
+  * CyPhySOT: Takes label(s) from interpreters
+  * CyPhy2CADPCB: "Visualizer"
+  * CyPhy2MfgBom: Not set (default)
+  * CyPhy2PCBMfg: Not set (default)
+  * CyPhy2RF: "RF"
+  * CyPhy2Schematic: "Schematic"
+  * CyPhy2Simulink: "Simulink"
