@@ -13,7 +13,7 @@ class ExecutorClient {
 
   async getNextJob() {
     try {
-      const res = await request.get(this.serverAddress + '/api/worker/getNextJob')
+      const res = await request.get(this.serverAddress + 'api/worker/getNextJob')
         .set("openmeta-worker-key", this.serverKey)
         .query({workerLabels: this.labels});
       const newJob = res.body;
@@ -40,7 +40,7 @@ class ExecutorClient {
     }
 
     const writeStreamPromise = new Promise((resolve, reject) => {
-      request.get(this.serverAddress + '/api/worker/downloadArtifact/' + artifactId)
+      request.get(this.serverAddress + 'api/worker/downloadArtifact/' + artifactId)
         .set("openmeta-worker-key", this.serverKey)
         .pipe(unzip.Extract({path: path.join(".", "worker", jobId)}))
         .on("close", resolve)
@@ -106,7 +106,7 @@ class ExecutorClient {
   async uploadZipFile(zipFilePath) {
     console.log("Uploading results");
     console.log(zipFilePath);
-    const uploadRes = await request.put(this.serverAddress + "/api/worker/uploadArtifact")
+    const uploadRes = await request.put(this.serverAddress + "api/worker/uploadArtifact")
       .set("openmeta-worker-key", this.serverKey)
       .attach("artifact", zipFilePath);
 
@@ -115,7 +115,7 @@ class ExecutorClient {
 
   async notifyJobCompletion(job, resultCode, zipFileHash) {
     console.log("Informing job server that job is complete");
-    const res = await request.post(this.serverAddress + "/api/worker/jobCompleted")
+    const res = await request.post(this.serverAddress + "api/worker/jobCompleted")
       .set("openmeta-worker-key", this.serverKey)
       .send({
         jobId: job.uid,
