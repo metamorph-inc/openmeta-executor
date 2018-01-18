@@ -57,8 +57,7 @@ Remote Executor Worker Labels
 
   * **Default**: "Windows14.13"
   * CyPhy2CAD: "Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"
-  * CyPhy2Modelica: "OpenModelica, py_modelica12.08"
-      * or: "OpenModelica, py_modelica14.13"
+  * CyPhy2Modelica: "py_modelica14.13, OpenModelica__latest_"
   * CyPhyCADAnalysis: "Creo, CADCreoParametricCreateAssembly.exev1.4, CyPhyCADAnalysis14.13"
   * CyPhyPET: Takes label(s) from interpreters used in its testbench(es)
   * CyPhyPrepareIFab: "Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"
