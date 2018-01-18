@@ -23,7 +23,7 @@ Remote execution worker for [OpenMETA](https://www.metamorphsoftware.com/openmet
 
 ### Running
 
-    yarn -- "http://<server-address>:8080/" "<workerKey>"
+    yarn start "http://<server-address>:8080/" "<workerKey>"
 
 where `<server-address>` is the IP address or hostname of the execution server,
 and `<workerKey>` is the value of `workerKey` from `auth.json` in the server's
