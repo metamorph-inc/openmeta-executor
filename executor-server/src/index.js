@@ -38,9 +38,12 @@ const argv = yargs
           hidden: true,
           prompt: `Enter password for user ${argv.username}`,
           required: true,
-          message: "Must enter a non-blank password.",
+          message: "Password must be non-blank and cannot contain ':'.",
           description: "Password",
-          replace: "*"
+          replace: "*",
+          conform: (value) => {
+            return value.indexOf(":") === -1;
+          }
         }
       }
     }, (err, result) => {
