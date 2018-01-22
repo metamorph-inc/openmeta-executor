@@ -55,17 +55,17 @@ Running the Remote Execution Server and Worker
 Remote Executor Worker Labels
 -----------------------------
 
-  * **Default**: "Windows14.13"
-  * CyPhy2CAD: "Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"
-  * CyPhy2Modelica: "py_modelica14.13, OpenModelica__latest_"
-  * CyPhyCADAnalysis: "Creo, CADCreoParametricCreateAssembly.exev1.4, CyPhyCADAnalysis14.13"
+  * **Default**: `"Windows14.13"`
+  * CyPhy2CAD: `"Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"`
+  * CyPhy2Modelica: `"py_modelica14.13, OpenModelica__latest_"`
+  * CyPhyCADAnalysis: `"Creo, CADCreoParametricCreateAssembly.exev1.4, CyPhyCADAnalysis14.13"`
   * CyPhyPET: Takes label(s) from interpreters used in its testbench(es)
-  * CyPhyPrepareIFab: "Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"
-  * CyPhyReliabilityAnalysis: "Windows14.13"
+  * CyPhyPrepareIFab: `"Creo, CADCreoParametricCreateAssembly.exev1.4, Windows14.13"`
+  * CyPhyReliabilityAnalysis: `"Windows14.13"`
   * CyPhySOT: Takes label(s) from interpreters
-  * CyPhy2CADPCB: "Visualizer"
-  * CyPhy2MfgBom: "Windows14.13"
-  * CyPhy2PCBMfg:"Windows14.13"
-  * CyPhy2RF: "RF"
-  * CyPhy2Schematic: "Schematic"
-  * CyPhy2Simulink: "Simulink"
+  * CyPhy2CADPCB: `"Visualizer"`
+  * CyPhy2MfgBom: `"Windows14.13"`
+  * CyPhy2PCBMfg: `"Windows14.13"`
+  * CyPhy2RF: `"RF"`
+  * CyPhy2Schematic: `"Schematic"`
+  * CyPhy2Simulink: `"Simulink"`
