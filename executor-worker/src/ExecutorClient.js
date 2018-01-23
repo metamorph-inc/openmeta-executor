@@ -29,6 +29,21 @@ class ExecutorClient {
     }
   }
 
+  async getJobInfo(jobId) {
+    try {
+      const res = await request.get(this.serverAddress + 'api/worker/job/' + jobId)
+        .set("openmeta-worker-key", this.serverKey);
+      const newJob = res.body;
+      return newJob;
+    } catch(err) {
+      if(err.status && err.status === 404) {
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  }
+
   async artifactDownload(artifactId, jobId) {
     //make sure work directory exists
     try {

@@ -175,7 +175,7 @@ export default function(ignoreJobLabels) {
    * Used by the client to get information about the job with ID `jobId`.  Returns
    * a job object as JSON.
    */
-  routes.get('/api/client/job/:jobId', asyncMiddleware(async (req, res, next) => {
+  routes.get(['/api/client/job/:jobId', '/api/worker/job/:jobId'], asyncMiddleware(async (req, res, next) => {
     const job = await jobStore.getJobById(req.params.jobId);
 
     if(!job) {

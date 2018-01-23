@@ -2,7 +2,8 @@ const JOB_POLL_DELAY = 2*1000;
 const ERROR_DELAY = 5*1000;
 const RETRY_COUNT = 5;
 
-import child_process from "mz/child_process";
+import child_process from "child_process";
+import terminate from "terminate";
 import path from "path";
 import JobState from "./JobState";
 
@@ -118,9 +119,19 @@ class ExecutingJobState extends State {
 
   async enter(job) {
     this.job = job;
+    this.cancelled = false;
     //TODO: Poll for job cancellation
+    this.timer = setTimeout(this.checkForCancellation.bind(this), 0);
+
     const result = await this.executeJob(job);
-    this.stateMachine.transition(CreatingResultsZipState, {job: this.job, result: result});
+
+  }
+
+  async exit() {
+    if(this.timer != null) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
   }
 
   async executeJob(job) {
@@ -130,16 +141,45 @@ class ExecutingJobState extends State {
     let runCommand = `${job.runCommand} > stdout.log 2>&1`;
 
     console.log("Launching subprocess");
-    try {
-      const result = await child_process.exec(runCommand, {
-        cwd: path.join(".", "worker", job.uid, job.workingDirectory)
-      });
 
-      console.log("Job completed: success");
-      return JobState.SUCCEEDED;
-    } catch(err) {
-      console.log("Job completed: failed");
-      return JobState.FAILED;
+    this.child = child_process.exec(runCommand, {
+      cwd: path.join(".", "worker", job.uid, job.workingDirectory)
+    }, (err, stdout, stderr) => { //completion callback
+      let result = JobState.FAILED;
+      if(err) {
+        if(this.cancelled) {
+          console.log("Job completed: cancelled");
+          result = JobState.CANCELLED;
+        } else {
+          console.log("Job completed: failed");
+        }
+      } else {
+        console.log("Job completed: success");
+        result = JobState.SUCCEEDED;
+      }
+
+      this.stateMachine.transition(CreatingResultsZipState, {job: this.job, result: result});
+    });
+  }
+
+  async checkForCancellation() {
+    const jobInfo = await this.stateMachine.executorClient.getJobInfo(this.job.uid);
+
+    if(jobInfo.status === JobState.REQUESTING_CANCELLATION) {
+      console.log("Cancellation requested for job");
+      if(this.child != null) {
+        terminate(this.child.pid, (err) => {
+          if(err) {
+            console.log("Job cancellation failed");
+            console.log(err);
+          } else {
+            console.log("Job cancellation succeeded");
+            this.cancelled = true;
+          }
+        });
+      }
+    } else {
+      this.timer = setTimeout(this.checkForCancellation.bind(this), JOB_POLL_DELAY);
     }
   }
 }

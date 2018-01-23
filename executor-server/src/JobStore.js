@@ -116,6 +116,9 @@ class JobStore {
       if(job.status === JobState.CREATED) {
         await this.markJobCompleted(jobId, JobState.CANCELLED, null);
         cancelled = true;
+      } else if(job.status === JobState.RUNNING) {
+        await this.markJobCompleted(jobId, JobState.REQUESTING_CANCELLATION, null);
+        cancelled = true;
       }
       // TODO: handle cancellation of jobs in progress (RUNNING state)
       return cancelled;
