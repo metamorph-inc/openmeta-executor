@@ -2,7 +2,7 @@ C:\Python27\python.exe download_node.py || exit /b !ERRORLEVEL!
 
 PATH=%CD%\node-v10.16.2-win-x64\;%PATH%
 
-call npm install -g yarn@1.3.2 || exit /b !ERRORLEVEL!
+call npm install -g yarn@1.17.3 || exit /b !ERRORLEVEL!
 
 pushd ..\executor-server || exit /b !ERRORLEVEL!
 call yarn && call yarn run package || exit /b !ERRORLEVEL!
