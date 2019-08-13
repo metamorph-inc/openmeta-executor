@@ -26,9 +26,6 @@ const argv = yargs
     const address = argv.listenAddress;
     const port = argv.listenPort;
 
-    console.log(argv.listenAddress);
-    console.log(argv.ignoreJobLabels);
-
     const app = App(argv.ignoreJobLabels);
 
     app.listen(port, address, () => console.log(`Listening on port ${port}`)); // eslint-disable-line no-console
