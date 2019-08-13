@@ -64,6 +64,8 @@ class JobStore {
         };
       }
 
+      console.log(query);
+
       this.db.find(query)
         .sort({creationTime: 1})
         .exec(function(err, docs) {

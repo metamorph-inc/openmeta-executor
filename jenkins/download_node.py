@@ -6,8 +6,8 @@ import zipfile
 import subprocess
 from urllib2 import urlopen, URLError, HTTPError
 
-url = 'https://nodejs.org/dist/v8.9.3/node-v8.9.3-win-x64.zip'
-filename = 'node-v8.9.3-win-x64.zip'
+url = 'https://nodejs.org/dist/v10.16.2/node-v10.16.2-win-x64.zip'
+filename = 'node-v10.16.2-win-x64.zip'
 dirname = os.path.splitext(filename)[0]
 
 

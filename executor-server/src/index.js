@@ -19,13 +19,15 @@ const argv = yargs
       description: "Port to listen on"
     },
     'ignore-job-labels': {
-      default: false,
       bool: true,
       description: "Ignore job labels when dispatching jobs (assume all workers can handle all jobs)"
     }
   }, (argv) => {
     const address = argv.listenAddress;
     const port = argv.listenPort;
+
+    console.log(argv.listenAddress);
+    console.log(argv.ignoreJobLabels);
 
     const app = App(argv.ignoreJobLabels);
 

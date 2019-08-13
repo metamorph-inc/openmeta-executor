@@ -1,6 +1,6 @@
 C:\Python27\python.exe download_node.py || exit /b !ERRORLEVEL!
 
-PATH=%CD%\node-v8.9.3-win-x64\;%PATH%
+PATH=%CD%\node-v10.16.2-win-x64.zip\;%PATH%
 
 call npm install -g yarn@1.3.2 || exit /b !ERRORLEVEL!
 
